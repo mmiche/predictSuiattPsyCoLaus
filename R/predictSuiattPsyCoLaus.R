@@ -1,0 +1,48 @@
+#' @title Documentation of this predictSuiattPsyCoLaus package.
+#' 
+#' @description This R package contains supplementary material of the publication 'Prospective prediction of suicide attempts in a general community sample of adults'.
+#' 
+#' The supplementary material contains all R code that was used to analyze and to present and visually display the results. Since the original raw data cannot be published, due to data protection rights, we provide code with which data can be simulated which is superficially similar to the original raw data. That way the published R code can be executed. Importantly, the full simulation procedure is transparently provided and explained, in order to leave no doubts that anybody could simulate this 'similar' dataset, merely based on what is published in the study report (see table 1 in the publication and the logistic regression coefficients that were obtained for the full original data).
+#' 
+#' All R packages that have been used in this predictSuiattPsyCoLaus package are listed below (see References).
+#' 
+#' Finally, R packages that were used to develop and publish this predictSuiattPsyCoLaus R package on GitHub are: devtools, usethis, roxygen2, and Rdpack. Thanks to the many R package developers!
+#' 
+#' @docType package
+#'
+#' @importFrom Rdpack reprompt
+#'
+#' @name predictSuiattPsyCoLaus
+#'
+#' @references
+#' \insertRef{rcoreteam2020}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{dcurves2022}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{rpart2022}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{rms2020}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{ggbeeswarm2022}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{tidyverse2019}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{ggplot22016}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{cowplot2019}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{tibble2021}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{magrittr2022}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{devtools2021}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{usethis2021}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{roxygen22021}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{reshape2Wickham}{predictSuiattPsyCoLaus}
+#' 
+#' \insertRef{Rdpack2022}{predictSuiattPsyCoLaus}
+#' 
+NULL
