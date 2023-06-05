@@ -1,0 +1,199 @@
+---
+title: "C: Logistic regression"
+author: Marcel Miché
+date: 2023-06-02
+output:
+  html_document:
+    theme: yeti
+    toc: false
+vignette: >
+  %\VignetteIndexEntry{C: Logistic regression}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## All code to obtain predictions, using logistic regression
+
+### Load required R packages (install first, if not yet installed)
+```{r echo=TRUE, eval = FALSE}
+# Load packages (install if not yet installed)
+# tidyverse: Allround package, e.g., visualizations with ggplot2
+library(tidyverse)
+# precrec: precision-recall curve statistics
+library(precrec)
+# cowplot: Formatting graphical plots
+library(cowplot)
+```
+
+### Set up the 80/20 training/test holdout resampling.
+```{r echo=TRUE, eval = FALSE}
+# Holdout proportion of full sample, use for training: 80%
+holdoutTrain <- .8
+# Remaining proportion of full sample, use for testing: 20%
+(holdout <- c(holdoutTrain, 1-holdoutTrain))
+```
+
+### Own function to apply the holdout resampling.
+```{r echo=TRUE, eval = FALSE}
+# Custom function to split the full data into a training and a test subset.
+twoSplit <- function(nonEventID=NULL, eventID=NULL,
+                     tr=holdout[1], te=holdout[2], seed=NULL) {
+    
+    if(sum(tr, te)!=1) {
+        stop("tr (training) and te (test) must sum up to 1.")
+    }
+    
+    # Ensure that each training and each test subset across all resamplings resemble the full dataset. That is, the outcome in each training and test subset pair should have roughly 1.2% many outcome cases.
+    
+    # Size of training subset (80%) from participants without the outcome.
+    trainN.non <- round(length(nonEventID)*tr, digits=0)
+    # Size of test subset (20%) from participants without the outcome.
+    testN.non <- round(length(nonEventID)*te, digits=0)
+    
+    # Size of training subset (80%) from participants with the outcome.
+    trainN <- round(length(eventID)*tr, digits=0)
+    # Size of test subset (20%) from participants with the outcome.
+    testN <- round(length(eventID)*te, digits=0)
+    
+    # Make vector with training and test cases among participants without the ouctome (N = 4002). This vector has a neat order of 1s and 2s.
+    nonEventSelect <- rep(1:2, times=c(trainN.non,
+                                       testN.non))
+    # Make vector with training and test cases among participants with the ouctome (N = 48). This vector has a neat order of 1s and 2s.
+    eventSelect <- rep(1:2, times=c(trainN,
+                                    testN))
+    # Use the current seed to ensure perfect reproducibility.
+    set.seed(seed)
+    # Shake the neat vector nonEventSelect up. The 1s and 2s will then be scattered all over the place.
+    nonEventSample <- sample(nonEventSelect)
+    
+    # Do the same thing to the vector eventSelect, what you just did to the vector nonEventSelect.
+    set.seed(seed)
+    eventSample <- sample(eventSelect)
+    
+    # Use the shaken up variables to randomly select the training cases.
+    train <- c(nonEventID[nonEventSample==1],
+               eventID[eventSample==1])
+    
+    # Use the shaken up variables to randomly select the test cases.
+    test <- c(nonEventID[nonEventSample==2],
+              eventID[eventSample==2])
+    
+    # Return as list the training and the test cases.
+    return(list(train=train, test=test))
+}
+```
+
+### Prepare outcome stratification.
+
+Outcome stratification = The outcome event rate in the training and test subset shall always be as similar as possible as in the total sample.
+```{r echo=TRUE, eval = FALSE}
+# Extract which participants have not reported the outcome.
+idNoCase <- which(data1$fsa==0)
+# Extract which participants reported the outcome.
+idCase <- which(data1$fsa==1)
+```
+
+### Run 100 distinct iterations of logistic regression cross-validated predictions.
+
+Prediction performance results are collected after each iteration.
+```{r echo=TRUE, eval = FALSE}
+# Ensure reproducibility
+set.seed(1)
+# Sample 100 different seeds. Each seed will be used for one resampling iteration.
+seeds20230324 <- sample(x=2:1984657, size=100)
+
+# AUCs: AUROC and PRAUC (use precrec package)
+AUCs <- c()
+# confMatLs: confusion matrices collected in a list,
+confMatLs <- list()
+# Start for-loop (with 100 iterations). Runs 2-3 minutes.
+for(i in 1:length(seeds20230324)) {
+    
+    print(i)
+    
+    # Make the resampling into training and test subsample
+    testLs <- twoSplit(nonEventID = idNoCase,
+                       eventID = idCase,
+                       seed = seeds20230324[i])
+    
+    # train dataset 
+    train <- data1[testLs$train,]
+    # logistic regression applied to training dataset
+    log_mod <- glm(fsa ~ ., family=binomial(link='logit'),data=train)
+    # test dataset
+    test <- data1[testLs$test,]
+    # Apply coefficients from logistic regression model to test dataset.
+    log_pred <- as.data.frame(predict(log_mod, test[,-length(test)], type='response'))
+    # Result: Test dataset with observed outcome (column truth) and predicted probability (column prob) that the outcome was observed.
+    dataTestset <- data.frame(truth=test$fsa, prob=log_pred[,1])
+    
+    # ----------------------------------
+    # This section computes TP, FP, ..., sens, spec, ... prauc
+    # ----------------------------------
+    selectedThresholds <- c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2)/100
+    trueClass <- factor(dataTestset$truth, levels = c("0", "1"))
+    # Empty list, used to collect the confusion matrices in the for-loop.
+    confMatLs_i <- list()
+    # Inner for-loop which generates the confusion matrix for the current iteration AND for each of the seven thresholds.
+    for(j in 1:length(selectedThresholds)) {
+        predClass <-
+            factor(dplyr::if_else(dataTestset$prob<selectedThresholds[j],0,1),
+                   levels = c("0", "1"))
+        tbl_j <- table(predClass, trueClass)
+        
+        sens <- tbl_j[2,2]/sum(tbl_j[,2]) # sensitivity
+        spec <- tbl_j[1,1]/sum(tbl_j[,1]) # specificity
+        ppv <- tbl_j[2,2]/sum(tbl_j[2,]) # positive predictive value
+        npv <- tbl_j[1,1]/sum(tbl_j[1,]) # negative predictive value
+        
+        # Transform matrix to vector.
+        tblVec_j <- as.vector(tbl_j)
+        # Collect values in a tibble (= a data.frame)
+        confMatLs_i[[j]] <- tibble::tibble(
+            # TN True Negative, FP False Positive
+            TN=tblVec_j[1], FP=tblVec_j[2],
+            # FN False Negative, TP True Positive
+            FN=tblVec_j[3], TP=tblVec_j[4],
+            sens=sens, spec=spec, ppv=ppv, npv=npv
+        )
+    }
+    # Bind the seven tibbles together
+    confMatDf_i <- dplyr::bind_rows(confMatLs_i)
+    # Add column thrsh (= threshold) in percent.
+    confMatDf_i$thrsh <- selectedThresholds*100
+    # Add column iter (iteration)
+    confMatDf_i$iter <- i
+    # Collect output for iteration i in list confMatLs.
+    confMatLs[[i]] <- confMatDf_i
+    
+    # ----------------------------------
+    # Compute auroc and prauc:
+    aucs_i <- precrec::evalmod(scores = dataTestset$prob, labels = dataTestset$truth)
+    # Add result to collecting vector AUCs.
+    AUCs <- c(AUCs, precrec::auc(aucs_i)$aucs)
+}
+```
+
+Quick impression of this single dataset (first 10 out of 700 rows).
+```{r echo=TRUE, eval = FALSE}
+confMatDf <- dplyr::bind_rows(confMatLs)
+# Display rows 1-10 of confMatDf (confMat = confusion matrix; Df = data.frame)
+confMatDf[1:10,]
+#
+#       TN    FP    FN    TP  sens  spec    ppv   npv thrsh  iter
+#    <int> <int> <int> <int> <dbl> <dbl>  <dbl> <dbl> <dbl> <int>
+#  1   360   440     1     9   0.9 0.45  0.0200 0.997  0.5      1
+#  2   410   390     1     9   0.9 0.512 0.0226 0.998  0.75     1
+#  3   502   298     2     8   0.8 0.628 0.0261 0.996  1        1
+#  4   608   192     3     7   0.7 0.76  0.0352 0.995  1.25     1
+#  5   688   112     5     5   0.5 0.86  0.0427 0.993  1.5      1
+#  6   755    45     5     5   0.5 0.944 0.1    0.993  1.75     1
+#  7   760    40     5     5   0.5 0.95  0.111  0.993  2        1
+#  8   406   394     2     8   0.8 0.507 0.0199 0.995  0.5      2
+#  9   497   303     2     8   0.8 0.621 0.0257 0.996  0.75     2
+# 10   570   230     4     6   0.6 0.712 0.0254 0.993  1        2
+```

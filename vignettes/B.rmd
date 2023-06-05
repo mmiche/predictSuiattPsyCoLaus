@@ -1,0 +1,109 @@
+---
+title: "B: Simulation code"
+author: Marcel Miché
+date: 2023-06-02
+output:
+  html_document:
+    theme: yeti
+    toc: false
+vignette: >
+  %\VignetteIndexEntry{B: Simulation code}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Table 1 in the manuscript contains the following information:
+
+* The analyzed sample size was 4050.
+* 205 participants reported a lifetime suicide attempt (assessed at study baseline).
+* 2197 participants were diagnosed with any lifetime mental disorder (assessed at baseline).
+* 1841 participants were male, 2209 were female.
+* Age (obtained at baseline; mean and standard deviation) was 53.89 and 11.09, respectively. Age ranged between 35.84 and 85.57.
+* The outcome suicide attempt at any of the three follow-up assessments were reported by 48 participants.
+
+*BEWARE*: Only if the below code is executed without any changes, the simulated dataset will be superficially similar to the original dataset. Especially will the outcome be identically distributed (4002 non-cases, 48 cases).
+
+Info: The set.seed(1) command (see code below) guarantees perfect reproducibility across users and operating systems.
+
+## Simulate original data
+```{r echo=TRUE}
+# psa: prior suicide attempt
+psa <- rep(c(0,1), times=c(3845, 205))
+# pmd: prior mental disorder
+pmd <- rep(c(0,1), times=c(1853, 2197))
+# sex (0 = male, 1 = female)
+sex <- rep(c(0,1), times=c(1841, 2209))
+# age: Sample 100'000 values from normal distribution with mean and sd same as in the real dataset.
+set.seed(1)
+age0 <- rnorm(n=100000, mean=53.89, sd = 11.09)
+# Select 4050 values in the age range of the real dataset.
+set.seed(1)
+age <- sample(age0[age0>=35.84 & age0<=85.57], size=4050)
+# The logistic regression coefficients that were obtained for the original dataset, were (intercept, psa, pmd, sex, age):
+# c(-4.0296, 2.5446, 1.7113, -0.0631, -0.0423)
+# linear combination
+z = -4.0296 + 2.5446*psa + 1.7113*pmd - 0.0631*sex - 0.0423*age
+# Use inverse logit function to produce pr (probabilities)
+pr = 1/(1+exp(-z))
+# Mess up these probabilities a little bit to introduce noise.
+sampleFrom <- seq(0, .002975, by=.00001)
+set.seed(1)
+changeProbsBy <- sample(sampleFrom, size=4050, replace=TRUE)
+pr <- pr + changeProbsBy
+# Compute the simulated outcome fsa (future suicide attempt)
+set.seed(1)
+fsa <- rbinom(4050, 1, pr)
+# Make the simulated dataset, which is closely based on the real dataset.
+simData <- data.frame(fsa, psa, pmd, sex, age)
+
+# Summary (compare with table 1 in the manuscript), age is a little different.
+summary(simData) # Simulated mean outcome = 0.01185 (1.185%)
+```
+
+## Comparison with output of original PsyCoLaus data
+
+Original PsyCoLaus data (overview computed with rms package)
+```{r echo=TRUE}
+#                        Model Likelihood    Discrimination    Rank Discrim.
+#                              Ratio Test           Indexes          Indexes
+# Obs          4050    LR chi2      94.95    R2       0.192    C       0.821
+#  0           4002    d.f.             4    g        1.379    Dxy     0.642
+#  1             48    Pr(> chi2) <0.0001    gr       3.971    gamma   0.645
+# max |deriv| 3e-05                          gp       0.015    tau-a   0.015
+#                                            Brier    0.011
+# 
+#           Coef    S.E.   Wald Z Pr(>|Z|)
+# Intercept -4.0296 0.9735 -4.14  <0.0001
+# SUA2       2.5446 0.3096  8.22  <0.0001
+# mentalDx   1.7113 0.5346  3.20  0.0014
+# Sex       -0.0631 0.3100 -0.20  0.8388
+# Age       -0.0423 0.0165 -2.56  0.0105
+```
+
+Simulated data (overview computed with rms package)
+```{r echo=TRUE}
+ #                       Model Likelihood    Discrimination    Rank Discrim.    
+ #                             Ratio Test           Indexes          Indexes    
+ # Obs         4050    LR chi2      76.56    R2       0.155    C       0.804    
+ #  0          4002    d.f.             4    g        1.317    Dxy     0.608    
+ #  1            48    Pr(> chi2) <0.0001    gr       3.731    gamma   0.612    
+ # max |deriv| 0.03                          gp       0.015    tau-a   0.014    
+ #                                           Brier    0.011                     
+ # 
+ #           Coef    S.E.    Wald Z Pr(>|Z|)
+ # Intercept -3.8455  0.9662 -3.98  <0.0001 
+ # psa        2.1145  0.3157  6.70  <0.0001 
+ # pmd        5.5099 41.3914  0.13  0.8941  
+ # sex       -3.7471 41.3940 -0.09  0.9279  
+ # age       -0.0431  0.0161 -2.67  0.0077
+```
+
+**References**
+
+R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. [https://www.R-project.org/](https://www.R-project.org/)
+
+Frank E Harrell Jr (2021). rms: Regression Modeling Strategies. R package version 6.1-1. [https://CRAN.R-project.org/package=rms](https://CRAN.R-project.org/package=rms)

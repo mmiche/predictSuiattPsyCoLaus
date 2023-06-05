@@ -1,0 +1,41 @@
+---
+title: "E: Extract and display prediction performance results"
+author: Marcel Miché
+date: 2023-06-02
+output:
+  html_document:
+    theme: yeti
+    toc: false
+vignette: >
+  %\VignetteIndexEntry{E: Extract and display prediction performance results}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## All code to extract prediction results from logistic regression and from classification and regression trees (CART).
+
+*Note* that all computations from vignettes C and D must have been finished, before continuing with the below code.
+
+## Inspect the collected prediction performances.
+
+Both, logistic regression and CART were run 700 times (100 cross-validations for each of the seven threshold probabilities/harm-to-benefit ratio). Each time the true positives and the false positives were recorded, among other results.
+
+Since each of 700 cross-validations consisted of a sample size of 810, of which 10 subjects developed the outcome, the net benefit of the treat all scenario across each of the 7 selected thresholds remained constant. This is how the net benefit for the treat all scenario is computed (see also the other supplementary material, which contains a detailed explanation of the decision curve analysis, from which net benefit is derived).
+
+```{r echo=TRUE, eval = TRUE}
+# hbr: harm-benefit ratio
+hbr <- function(x) {
+    return(x/(1-x))
+}
+hbrVec <- hbr(c(.005, .0075, .01, .0125, .015, .0175, .02))
+# Outcome incidence in each test subset
+inc <- 10/810
+# Compute net benefit for the treat all scenario
+nbTreatAll <- inc - (1-inc)*hbrVec
+# Display harm-to-benefit ratio, e.g., the first is 1/199 = 0.00738.
+cbind(nbTreatAll)
+```

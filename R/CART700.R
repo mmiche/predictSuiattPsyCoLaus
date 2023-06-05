@@ -16,8 +16,10 @@
 #'   \item iter = iteration. Values between 1 and 700 (there were 100 cross-validated predictions for each of the 7 selected threshold probabilities, yielding 700 overall cross-validated predictions).
 #' }
 #'
-#' @details FPwt = False Positive weight. This is the one half part of the harm-to-benefit ratio, which is used to weigh the false positives (FP). 
+#' @details FPwt = False Positive weight. This is the one half part of the harm-to-benefit ratio, which is used to weigh the false positives (FP).
+#' 
 #' For instance, take row 1 of the CART results, where there are 204 FP subjects and the FPwt is 199 (which stands for 1:199). Therefore, 204 is multiplied by 1/199, which yields 1.025126 (which is the weighted FP). This weighted FP is subtracted from the TP (6), which yields 4.974874. Finally, this result is divided by the sample size (which in all 700 cross-validation subsets is 810). Therefore, 4.974874/810 yields the net benefit of 0.00614182.
+#' 
 #' Note. Vignette E in this predictSuiattPsyCoLaus package show how net benefit and other metrics are computed, based on this CART700 output.
 #'
 #' @docType data

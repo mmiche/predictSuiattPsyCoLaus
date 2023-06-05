@@ -11,7 +11,7 @@
 #' \itemize{
 #'   \item Make sure your data stems from a general community adult sample. If not, consider recalibration (Van Calster et al., 2019).
 #'   \item Make sure your data contains the four predictors lifetime suicide attempt (any prior suicide attempt), any lifetime mental disorder diagnosis (any of the disorder classes affective/mood, anxiety, alcohol abuse/dependence, other substance abuse/dependence), sex (male, female), age.
-#'   \item Make sure that the coding of the four predictors are 0 (for "no" and "male") and 1 (for "yes" and "female"), "no" meaning absence of prior suicide attempt or mental diagnosis. The variable age must be a continous numeric variable (unit: years).
+#'   \item Make sure that the coding of the four predictors are 0 (for "no" and "male") and 1 (for "yes" and "female"), "no" meaning absence of prior suicide attempt or mental disorder diagnosis. The variable age must be a continous numeric variable (unit: years).
 #'   \item Make sure the outcome in your data is future suicide attempt.
 #'   \item Before applying our prediction model to your data, rename the predictor columns to lifetimeSA (= any prior suicide attempt), lifetimeMentalDx (any prior mental disorder), sex, and age.
 #' }
