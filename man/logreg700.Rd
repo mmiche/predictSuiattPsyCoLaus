@@ -29,9 +29,9 @@ data(logreg700)
 logreg = Logistic regression algorithm.
 }
 \details{
-thrsh = threshold probability. The 7 selected threshold probabilities (0.5%, 0.75%, 1%, 1.25%, 1.5%, 1.75%, and 2%) are used to weigh the False Positives, after having transformed the thresholds to the harm-to-benefit ratio.
+thrsh = threshold probability. The 7 selected threshold probabilities, in percent: 0.5, 0.75, 1, 1.25, 1.5, 1.75, and 2) are used to weigh the False Positives, after having transformed the thresholds to the harm-to-benefit ratio.
 
-For instance, take row 1 of the logistic regression results, where there are 440 FP subjects and the threshold is 0.5% (which transforms to a harm-to-benefit ratio of 1:199). Therefore, 440 is multiplied by 1/199, which yields 2.211055 (which is the weighted FP). This weighted FP is subtracted from the TP (9), which yields 6.788945. Finally, this result is divided by the sample size (which in all 700 cross-validation subsets is 810). Therefore, 6.788945/810 yields the net benefit of 0.008381414.
+For instance, take row 1 of the logistic regression results, where there are 440 FP subjects and the threshold is 0.5 percent (which transforms to a harm-to-benefit ratio of 1:199). Therefore, 440 is multiplied by 1/199, which yields 2.211055 (which is the weighted FP). This weighted FP is subtracted from the TP (9), which yields 6.788945. Finally, this result is divided by the sample size (which in all 700 cross-validation subsets is 810). Therefore, 6.788945/810 yields the net benefit of 0.008381414.
 
 Note. Vignette E in this predictSuiattPsyCoLaus package show how net benefit and other metrics are computed, based on this logreg700 output.
 }
