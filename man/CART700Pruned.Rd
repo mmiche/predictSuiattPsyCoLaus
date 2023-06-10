@@ -3,7 +3,7 @@
 \docType{data}
 \name{CART700Pruned}
 \alias{CART700Pruned}
-\title{A list, each list element is a data set, output of 700 cross-validated, and optimized (see \strong{Details} below), CART-based predictions of a future suicide attempt.}
+\title{A list, each list element is a data set, output of 700 cross-validated, and optimized, CART-based predictions of a future suicide attempt.}
 \format{
 Each of the six data.frame in the list contains 700 rows and 10 columns:
 \itemize{
@@ -23,10 +23,10 @@ Each of the six data.frame in the list contains 700 rows and 10 columns:
 R package predictSuiattPsyCoLaus
 }
 \usage{
-data(CART700)
+data(CART700Pruned)
 }
 \description{
-CART = Classification and regression trees (Breiman et al., 1984) algorithm.
+CART = Classification and regression trees (Breiman et al., 1984) algorithm. Optimization argument cp (for pruning the decision tree), see \strong{Details} below.
 }
 \details{
 The argument cp in the function rpart (of the rpart package) has been set to: 0 (no pruning), 0.01, 0.02, 0.03, 0.04, and 0.05. For each of these values, we ran the same 700 cross-validations as in the main analyses. Depending on the value of cp, the least important splits of the fully grown decision tree get snipped off (see R package documentation of rpart, see function name prune.rpart).
