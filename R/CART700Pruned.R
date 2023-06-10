@@ -1,6 +1,6 @@
-#' A list, each list element is a data set, output of 700 cross-validated, and optimized (see \strong{Details} below), CART-based predictions of a future suicide attempt.
+#' A list, each list element is a data set, output of 700 cross-validated, and optimized, CART-based predictions of a future suicide attempt.
 #'
-#' CART = Classification and regression trees (Breiman et al., 1984) algorithm.
+#' CART = Classification and regression trees (Breiman et al., 1984) algorithm. Optimization argument cp (for pruning the decision tree), see \strong{Details} below.
 #'
 #' @format Each of the six data.frame in the list contains 700 rows and 10 columns:
 #' \itemize{
@@ -34,7 +34,7 @@
 #' 
 #' \insertRef{tibble2021}{predictSuiattPsyCoLaus}
 #'
-#' @usage data(CART700)
+#' @usage data(CART700Pruned)
 #' @examples
 #' # Display the structure of the first data set in the console
 #' str(CART700Pruned[[1]])
