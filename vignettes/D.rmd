@@ -116,7 +116,7 @@ for(i in 1:length(seeds20230324)) {
 ```
 
 ### Compute the harm-to-benefit ratio corresponding to the seven threshold probabilities
-```{r echo=TRUE, eval = TRUE}
+```{r echo=TRUE, eval = FALSE}
 # Custom function to compute for any given risk thresholds the corresponding harm-to-benefit ratio.
 # Correspondance between risk threshold and harm-to-benefit ratio.
 # Example: 5% threshold = odds(5) = 95/5 = 19:1.
@@ -126,15 +126,28 @@ rtHbr <- function(rt=NULL) {
         stop("Risk thresholds can never be below zero or above 100.")
     }
     benefit <- rt
+    # harm is the opposite of benefit, computed as the reverse.
     harm <- 100 - rt
     # hb: result after dividing harm by benefit
-    # If hb = 19, that means the ratio is 1:19 (same with any other hb).
     hb <- harm/benefit
+    # If hb = 99, that means the harm-to-benefit ratio is 1:99, if hb = 49, then the ratio is 1:49, same with any other hb.
     return(tibble::tibble(harm, benefit, hb, rt))
 }
 # rts7: Seven predefined risk thresholds (in percent).
 rts7 <- seq(.5,2, by=.25)
 (rtDf7 <- rtHbr(rts7))
+#
+# Output in R console
+# A tibble: 7 × 4
+#    harm benefit    hb    rt
+#   <dbl>   <dbl> <dbl> <dbl>
+# 1  99.5    0.5  199    0.5 
+# 2  99.2    0.75 132.   0.75
+# 3  99      1     99    1   
+# 4  98.8    1.25  79    1.25
+# 5  98.5    1.5   65.7  1.5 
+# 6  98.2    1.75  56.1  1.75
+# 7  98      2     49    2
 ```
 
 ### Custom function to repeatedly run CART.
