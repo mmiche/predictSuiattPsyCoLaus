@@ -22,13 +22,9 @@ Finally, R packages that were used to develop and publish this predictSuiattPsyC
 
 \insertRef{rms2020}{predictSuiattPsyCoLaus}
 
-\insertRef{ggbeeswarm2022}{predictSuiattPsyCoLaus}
-
 \insertRef{tidyverse2019}{predictSuiattPsyCoLaus}
 
 \insertRef{ggplot22016}{predictSuiattPsyCoLaus}
-
-\insertRef{cowplot2019}{predictSuiattPsyCoLaus}
 
 \insertRef{tibble2021}{predictSuiattPsyCoLaus}
 
