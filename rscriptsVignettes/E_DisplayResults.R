@@ -58,22 +58,26 @@ CARTcompleted <- computeResults(predictSuiattPsyCoLaus::CART700)
 # Display the final results
 # -------------------------
 
-# First, net benefit (minimum, median, maximum).
+# First, net benefit (median, maximum, minimum).
 # -----
 
 # Logistic regression (results shown in figure 1 of the main document)
 (logregNB <- logregCompleted %>%
     group_by(level) %>%
-    summarise(Min=min(nbModel),
-              Median=median(nbModel),
-              Max=max(nbModel)))
+     summarise(
+         Median=median(nbModel),
+         Max=max(nbModel),
+         Min=min(nbModel)
+     ))
 
 # CART (results shown in figure 1 of the main document)
 (cartNB <- CARTcompleted %>%
     group_by(level) %>%
-    summarise(Min=min(nbModel),
-              Median=median(nbModel),
-              Max=max(nbModel)))
+        summarise(
+            Median=median(nbModel),
+            Max=max(nbModel),
+            Min=min(nbModel)
+        ))
 
 dcaDf <- tibble(
     label = factor(
@@ -131,25 +135,29 @@ ggplot(data=dcaDf, aes(x=threshold, y=net_benefit, colour=label)) +
 # Second, delta net benefit:
 # ------
 
-# Delta net benefit (minimum, median, maximum):
+# Delta net benefit (median, maximum, minimum):
 
 # Logistic regression
 # First, remove the 18 models with a negative delta net benefit.
 (logregDeltaNB <-
 logregCompleted[logregCompleted$deltaNb>=0,] %>%
     group_by(level) %>%
-    summarise(Min=min(deltaNb),
-              Median=median(deltaNb),
-              Max=max(deltaNb)))
+    summarise(
+        Median=median(deltaNb),
+        Max=max(deltaNb),
+        Min=min(deltaNb)
+    ))
 
 # CART
 # First, remove the 119 models with a negative delta net benefit.
 (cartDeltaNB <-
 CARTcompleted[CARTcompleted$deltaNb>=0,] %>%
     group_by(level) %>%
-    summarise(Min=min(deltaNb),
-              Median=median(deltaNb),
-              Max=max(deltaNb)))
+        summarise(
+            Median=median(deltaNb),
+            Max=max(deltaNb),
+            Min=min(deltaNb)
+        ))
 
 # Display the potentially harmful models (i.e., models with a negative delta net benefit)
 

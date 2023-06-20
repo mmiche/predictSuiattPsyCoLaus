@@ -16,7 +16,7 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## All code to extract prediction results from logistic regression and from classification and regression trees (CART).
+## All code to compute and present clinical utility results for logistic regression and for classification and regression trees (CART).
 
 **Note** that all computations from vignettes C and D must have been finished, before continuing with the below code.
 
@@ -103,36 +103,40 @@ For each probability threshold (or harm-to-benefit ratio), compute minimum, medi
 # Logistic regression
 (logregNB <- logregCompleted %>%
     group_by(level) %>%
-    summarise(Min=min(nbModel),
-              Median=median(nbModel),
-              Max=max(nbModel)))
+     summarise(
+         Median=median(nbModel),
+         Max=max(nbModel),
+         Min=min(nbModel)
+     ))
 # Output in R console
-#   level       Min  Median     Max
-#   <int>     <dbl>   <dbl>   <dbl>
-# 1     1  0.00498  0.00866 0.0100 
-# 2     2  0.00444  0.00777 0.00953
-# 3     3  0.00228  0.00604 0.00933
-# 4     4  0.000563 0.00459 0.00925
-# 5     5  0.000401 0.00371 0.00826
-# 6     6 -0.000151 0.00363 0.00777
-# 7     7  0.000252 0.00398 0.00781
+#   level  Median     Max       Min
+#   <int>   <dbl>   <dbl>     <dbl>
+# 1     1 0.00866 0.0100   0.00498 
+# 2     2 0.00777 0.00953  0.00444 
+# 3     3 0.00604 0.00933  0.00228 
+# 4     4 0.00459 0.00925  0.000563
+# 5     5 0.00371 0.00826  0.000401
+# 6     6 0.00363 0.00777 -0.000151
+# 7     7 0.00398 0.00781  0.000252
 
 # CART (results shown in figure 1 of the main document)
 (cartNB <- CARTcompleted %>%
     group_by(level) %>%
-    summarise(Min=min(nbModel),
-              Median=median(nbModel),
-              Max=max(nbModel)))
+        summarise(
+            Median=median(nbModel),
+            Max=max(nbModel),
+            Min=min(nbModel)
+        ))
 # Output in R console
-#   level      Min  Median     Max
-#   <int>    <dbl>   <dbl>   <dbl>
-# 1     1 0.00139  0.00543 0.00993
-# 2     2 0.00201  0.00559 0.00930
-# 3     3 0.00142  0.00494 0.00868
-# 4     4 0.000906 0.00413 0.00820
-# 5     5 0.000721 0.00342 0.00802
-# 6     6 0.000424 0.00318 0.00814
-# 7     7 0.000126 0.00277 0.00685
+#   level  Median     Max      Min
+#   <int>   <dbl>   <dbl>    <dbl>
+# 1     1 0.00543 0.00993 0.00139 
+# 2     2 0.00559 0.00930 0.00201 
+# 3     3 0.00494 0.00868 0.00142 
+# 4     4 0.00413 0.00820 0.000906
+# 5     5 0.00342 0.00802 0.000721
+# 6     6 0.00318 0.00814 0.000424
+# 7     7 0.00277 0.00685 0.000126
 ```
 
 ## Prepare output to plot the (median) decision curves
@@ -234,9 +238,7 @@ ggplot(data=dcaDf, aes(x=threshold, y=net_benefit, colour=label)) +
 
 **Note.** The plot itself is shown in the publication and/or the other supplementary material. You can generate the plot yourself by using the R script 'E_DisplayResults', which is part of this supplementary R package (see folder 'rscriptsVignettes').
 
-## Compute delta net benefit
-
-# Display the summarized results
+## Compute delta net benefit and present the summarized results
 
 For each probability threshold (or harm-to-benefit ratio), compute minimum, median, and maximum delta net benefit.
 
@@ -246,38 +248,42 @@ For each probability threshold (or harm-to-benefit ratio), compute minimum, medi
 (logregDeltaNB <-
 logregCompleted[logregCompleted$deltaNb>=0,] %>%
     group_by(level) %>%
-    summarise(Min=min(deltaNb),
-              Median=median(deltaNb),
-              Max=max(deltaNb)))
+    summarise(
+        Median=median(deltaNb),
+        Max=max(deltaNb),
+        Min=min(deltaNb)
+    ))
 # Output in R console
-#   level       Min  Median     Max
-#   <int>     <dbl>   <dbl>   <dbl>
-# 1     1 0.0000496 0.00140 0.00266
-# 2     2 0.000131  0.00290 0.00465
-# 3     3 0.000200  0.00370 0.00696
-# 4     4 0.000563  0.00459 0.00925
-# 5     5 0.000401  0.00371 0.00826
-# 6     6 0.000531  0.00364 0.00777
-# 7     7 0.000252  0.00398 0.00781
+#   level  Median     Max       Min
+#   <int>   <dbl>   <dbl>     <dbl>
+# 1     1 0.00140 0.00266 0.0000496
+# 2     2 0.00290 0.00465 0.000131 
+# 3     3 0.00370 0.00696 0.000200 
+# 4     4 0.00459 0.00925 0.000563 
+# 5     5 0.00371 0.00826 0.000401 
+# 6     6 0.00364 0.00777 0.000531 
+# 7     7 0.00398 0.00781 0.000252
 
 # CART
 # First, remove the 119 models with a negative delta net benefit.
 (cartDeltaNB <-
 CARTcompleted[CARTcompleted$deltaNb>=0,] %>%
     group_by(level) %>%
-    summarise(Min=min(deltaNb),
-              Median=median(deltaNb),
-              Max=max(deltaNb)))
+        summarise(
+            Median=median(deltaNb),
+            Max=max(deltaNb),
+            Min=min(deltaNb)
+        ))
 # Output in R console
-#   level      Min   Median     Max
-#   <int>    <dbl>    <dbl>   <dbl>
-# 1     1 8.67e-19 0.000341 0.00254
-# 2     2 2.18e- 5 0.00140  0.00442
-# 3     3 1.37e- 4 0.00266  0.00631
-# 4     4 9.06e- 4 0.00413  0.00820
-# 5     5 7.21e- 4 0.00342  0.00802
-# 6     6 4.24e- 4 0.00318  0.00814
-# 7     7 1.26e- 4 0.00277  0.00685
+#   level   Median     Max      Min
+#   <int>    <dbl>   <dbl>    <dbl>
+# 1     1 0.000341 0.00254 8.67e-19
+# 2     2 0.00140  0.00442 2.18e- 5
+# 3     3 0.00266  0.00631 1.37e- 4
+# 4     4 0.00413  0.00820 9.06e- 4
+# 5     5 0.00342  0.00802 7.21e- 4
+# 6     6 0.00318  0.00814 4.24e- 4
+# 7     7 0.00277  0.00685 1.26e- 4
 ```
 
 ## Display the potentially harmful models (i.e., models with a negative delta net benefit)

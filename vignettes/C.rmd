@@ -18,6 +18,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## All code to obtain predictions, using logistic regression
 
+**Note** that all computations from vignette B must have been finished, before continuing with the below code.
+
 ### Load required R packages (install first, if not yet installed)
 ```{r echo=TRUE, eval = FALSE}
 # Load packages (install if not yet installed)
