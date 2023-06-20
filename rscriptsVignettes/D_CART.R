@@ -1,42 +1,20 @@
----
-title: "D: Classification and regression trees (CART)"
-author: Marcel Miché
-date: 2023-06-02
-output:
-  html_document:
-    theme: yeti
-    toc: false
-vignette: >
-  %\VignetteIndexEntry{D: Classification and regression trees (CART)}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## All code to obtain predictions, using CART
-
-### Load required R packages (install first, if not yet installed)
-```{r echo=TRUE, eval = FALSE}
-# Load packages (install if not yet installed)
-# tidyverse: Allround package, e.g., visualizations with ggplot2
-library(tidyverse)
-# rpart: recursive partitioning (package required to run CART)
 library(rpart)
-```
+library(tidyverse)
 
-### Set up the 80/20 training/test holdout resampling.
-```{r echo=TRUE, eval = FALSE}
+# ------------------------------------------
+# BEWARE: Make sure that the script A_PsyCoLausSimulateData.R has been executed before starting to execute this script.
+# source("/Users/mmiche/Desktop/PsyCoLausSuiatt/predictSuiattPsyCoLausDev/PsyCoLausSim/CleanedScripts/A_PsyCoLausSimulateData.R", echo = FALSE)
+# data1 <- simData[,c("sex", "age", "psa", "pmd", "fsa")]
+data1$fsa <- forcats::as_factor(data1$fsa)
+names(data1) <- c("sex", "age", "psa", "pmd", "fsa")
+str(data1)
+# ------------------------------------------
+
 # Holdout proportion of full sample, use for training: 80%
 holdoutTrain <- .8
 # Remaining proportion of full sample, use for testing: 20%
 (holdout <- c(holdoutTrain, 1-holdoutTrain))
-```
 
-### Own function to apply the holdout resampling.
-```{r echo=TRUE, eval = FALSE}
 # Custom function to split the full data into a training and a test subset.
 twoSplit <- function(nonEventID=NULL, eventID=NULL,
                      tr=holdout[1], te=holdout[2], seed=NULL) {
@@ -83,21 +61,11 @@ twoSplit <- function(nonEventID=NULL, eventID=NULL,
     # Return as list the training and the test cases.
     return(list(train=train, test=test))
 }
-```
 
-### Prepare outcome stratification.
-
-Outcome stratification = The outcome event rate in the training and test subset shall always be as similar as possible as in the total sample.
-```{r echo=TRUE, eval = FALSE}
-# Extract which participants have not reported the outcome.
 idNoCase <- which(data1$fsa==0)
-# Extract which participants reported the outcome.
 idCase <- which(data1$fsa==1)
-```
+# 
 
-### Prepare 100 distinct iterations of CART cross-validated predictions.
-
-```{r echo=TRUE, eval = FALSE}
 # Ensure reproducibility
 set.seed(1)
 # Sample 100 different seeds. Each seed will be used for one resampling iteration.
@@ -113,10 +81,7 @@ for(i in 1:length(seeds20230324)) {
     # Add this list to the overall list, which finally will contain 100 lists.
     testLs[[i]] <- testLs_i
 }
-```
-
-### Compute the harm-to-benefit ratio corresponding to the seven threshold probabilities
-```{r echo=TRUE, eval = FALSE}
+#
 # Custom function to compute for any given risk thresholds the corresponding harm-to-benefit ratio.
 # Correspondance between risk threshold and harm-to-benefit ratio.
 # Example: 5% threshold = odds(5) = 95/5 = 19:1.
@@ -126,32 +91,19 @@ rtHbr <- function(rt=NULL) {
         stop("Risk thresholds can never be below zero or above 100.")
     }
     benefit <- rt
-    # harm is the opposite of benefit, computed as the reverse.
     harm <- 100 - rt
     # hb: result after dividing harm by benefit
+    # If hb = 19, that means the ratio is 1:19 (same with any other hb).
     hb <- harm/benefit
-    # If hb = 99, that means the harm-to-benefit ratio is 1:99, if hb = 49, then the ratio is 1:49, same with any other hb.
     return(tibble::tibble(harm, benefit, hb, rt))
 }
+# ------------------
 # rts7: Seven predefined risk thresholds (in percent).
 rts7 <- seq(.5,2, by=.25)
 (rtDf7 <- rtHbr(rts7))
-#
-# Output in R console
-# A tibble: 7 × 4
-#    harm benefit    hb    rt
-#   <dbl>   <dbl> <dbl> <dbl>
-# 1  99.5    0.5  199    0.5 
-# 2  99.2    0.75 132.   0.75
-# 3  99      1     99    1   
-# 4  98.8    1.25  79    1.25
-# 5  98.5    1.5   65.7  1.5 
-# 6  98.2    1.75  56.1  1.75
-# 7  98      2     49    2
-```
-
-### Custom function to repeatedly run CART.
-```{r echo=TRUE, eval = FALSE}
+# Want to see numbers in more detail, e.g., column hb?
+data.frame(rtDf7)
+# 
 # Custom function to run the classification and regression tree model, using the seven pre-specified weights. The weights are the part of the harm-to-benefit ratio which in this study is always higher than 1.
 rpartFun <- function(FPwt=1, data=NULL, trainIds=NULL) {
     
@@ -205,10 +157,7 @@ rpartFun <- function(FPwt=1, data=NULL, trainIds=NULL) {
     }
     return(data.frame(wts=weightsVec))
 }
-```
 
-### Custom function to compute cell counts of CART-based confusion matrix.
-```{r echo=TRUE, eval = FALSE}
 # Custom function that uses the cell counts from the confusion matrices to compute sensitivity, specificity, positive predictive value, and negative predictive value.
 quatPerf <- function(treeDf=NULL) {
     
@@ -238,12 +187,7 @@ quatPerf <- function(treeDf=NULL) {
     colnames(out) <- c("sens", "spec", "ppv", "npv")
     return(out)
 }
-```
 
-### Repeatedly run CART (100 cross-validations for each harm-to-benefit ratio)
-
-Prediction performance results are collected after each iteration.
-```{r echo=TRUE, eval = FALSE}
 FPwts <- rtDf7$hb
 # Collect results in a list
 treeResLs <- list()
@@ -276,10 +220,7 @@ for(i in 1:length(testLs)) {
     treeResLs[[paste0("perfDf",i)]] <- perfsDf
     
 }
-```
 
-### Formatting of all results into a single dataset.
-```{r echo=TRUE, eval = FALSE}
 # Final computation, use list cartLs to collect the results.
 cartLs <- list()
 for(i in 1:(length(treeResLs)/2)) {
@@ -309,22 +250,7 @@ for(i in 1:(length(treeResLs)/2)) {
 
 # Put the results from all 100 cross-validations into a single data.frame. Since seven threshold probabilities were selected, this yields a data.frame with 700 rows.
 cartDf <- dplyr::bind_rows(cartLs)
-```
 
-Quick impression of this single dataset (first 10 out of 700 rows).
-```{r echo=TRUE, eval = FALSE}
 # Display rows 1-10 of cartDf
 cartDf[1:10,]
-#
-#     TN  FP FN TP sens    spec        ppv       npv      FPwt iter
-# 1  596 204  4  6  0.6 0.74500 0.02857143 0.9933333 199.00000    1
-# 2  603 197  4  6  0.6 0.75375 0.02955665 0.9934102 132.33333    1
-# 3  606 194  4  6  0.6 0.75750 0.03000000 0.9934426  99.00000    1
-# 4  659 141  5  5  0.5 0.82375 0.03424658 0.9924699  79.00000    1
-# 5  684 116  5  5  0.5 0.85500 0.04132231 0.9927431  65.66667    1
-# 6  684 116  5  5  0.5 0.85500 0.04132231 0.9927431  56.14286    1
-# 7  696 104  5  5  0.5 0.87000 0.04587156 0.9928673  49.00000    1
-# 8  577 223  5  5  0.5 0.72125 0.02192982 0.9914089 199.00000    2
-# 9  574 226  4  6  0.6 0.71750 0.02586207 0.9930796 132.33333    2
-# 10 574 226  4  6  0.6 0.71750 0.02586207 0.9930796  99.00000    2
-```
+# --------------------------------------------------

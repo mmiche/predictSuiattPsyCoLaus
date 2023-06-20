@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## All code to extract prediction results from logistic regression and from classification and regression trees (CART).
 
-*Note* that all computations from vignettes C and D must have been finished, before continuing with the below code.
+**Note** that all computations from vignettes C and D must have been finished, before continuing with the below code.
 
 ## Inspect the collected prediction performances.
 
@@ -27,15 +27,274 @@ Both, logistic regression and CART were run 700 times (100 cross-validations for
 Since each of 700 cross-validations consisted of a sample size of 810, of which 10 subjects developed the outcome, the net benefit of the treat all scenario across each of the 7 selected thresholds remained constant. This is how the net benefit for the treat all scenario is computed (see also the other supplementary material, which contains a detailed explanation of the decision curve analysis, from which net benefit is derived).
 
 ```{r echo=TRUE, eval = TRUE}
-# hbr: harm-benefit ratio
+# Custom function to compute harm-to-benefit ratio (hbr)
 hbr <- function(x) {
     return(x/(1-x))
 }
-hbrVec <- hbr(c(.005, .0075, .01, .0125, .015, .0175, .02))
-# Outcome incidence in each test subset
+# FPwt = false positive weight; 1/199 = 0.005025126, etc.
+(FPwt <- hbr(c(.005, .0075, .01, .0125, .015, .0175, .02)))
+# Outcome incidence in each of the 700 test subsets
 inc <- 10/810
 # Compute net benefit for the treat all scenario
-nbTreatAll <- inc - (1-inc)*hbrVec
+nbTreatAll <- inc - FPwt*(1-inc)
 # Display harm-to-benefit ratio, e.g., the first is 1/199 = 0.00738.
 cbind(nbTreatAll)
 ```
+
+## The seven threshold probabilities correspond to these harm-to-benefit ratios.
+```{r echo=TRUE, eval = TRUE}
+# probThresh = probability thresholds; htb = harm-to-benefit ratio (rounded to three decimals); FPwt = weight by which false positives get weighted.
+data.frame(
+    probThresh=c(.005, .0075, .01, .0125, .015, .0175, .02),
+    htb=c("1:199", "1:132.333", "1:99", "1:79", "1:65.667", "1:56.143", "1:49"),
+    FPwt=FPwt)
+```
+
+## Custom function to compute the net benefit of the prediction model
+```{r echo=TRUE, eval = FALSE}
+# tp = true positives, fp = false positives, FPwt = false positives weight.
+nbModFun <- function(tp=NULL, fp=NULL, FPwt=NULL) {
+    return((tp - FPwt*fp)/810)
+}
+```
+
+## Custom function to compute the clinical utility results for a classification prediction model.
+```{r echo=TRUE, eval = FALSE}
+# Argument confMatDf = confusion matrix data.frame. That is, confMatDf contains 10 columns, 8 of which comprise the confusion matrix or are directly computed on the basis of the confusion matrix.
+computeResults <- function(confMatDf=NULL) {
+    # Append a distinct column that shows the seven unique levels of threshold probabilities (logreg) or harm-to-benefit ratios (CART).
+    confMatDf$level <- rep(1:7, times=100)
+    # Append the FPwt to confMatDf.
+    confMatDf$FPwt <- rep(FPwt, times=100)
+    # Append the treat all net benefit to confMatDf.
+    confMatDf$nbTreatAll <- rep(nbTreatAll, times=100)
+    # Append the treat none net benefit to confMatDf.
+    confMatDf$nbTreatNone <- rep(0, times=nrow(confMatDf))
+    # Compute and append the prediction model net benefit to confMat. Use custom function nbModFun for this.
+    confMatDf$nbModel <- nbModFun(tp=confMatDf$TP, fp=confMatDf$FP, FPwt=confMatDf$FPwt)
+    # deltaNb: Difference between net benefit of the prediction model and net benefit of the next best contender (e.g., treat all or treat none).
+    confMatDf$deltaNb <-
+        # Column 'level' in confMatDf represents the thresholds (for logreg) or FPwt (for CART).
+        dplyr::if_else(confMatDf$level <= 3,
+                       confMatDf$nbModel - confMatDf$nbTreatAll,
+                       confMatDf$nbModel)
+    return(confMatDf)
+}
+```
+
+## Apply this custom function to the 100 cross-validated predictions
+
+### Logistic regression
+```{r echo=TRUE, eval = FALSE}
+# Apply custom function computeResults to the logistic regression output.
+logregCompleted <- computeResults(predictSuiattPsyCoLaus::logreg700)
+```
+
+### CART
+```{r echo=TRUE, eval = FALSE}
+# Apply custom function computeResults to the CART output.
+CARTcompleted <- computeResults(predictSuiattPsyCoLaus::CART700)
+```
+
+## Display the summarized results
+
+For each probability threshold (or harm-to-benefit ratio), compute minimum, median, and maximum net benefit.
+```{r echo=TRUE, eval = FALSE}
+# Logistic regression
+(logregNB <- logregCompleted %>%
+    group_by(level) %>%
+    summarise(Min=min(nbModel),
+              Median=median(nbModel),
+              Max=max(nbModel)))
+# Output in R console
+#   level       Min  Median     Max
+#   <int>     <dbl>   <dbl>   <dbl>
+# 1     1  0.00498  0.00866 0.0100 
+# 2     2  0.00444  0.00777 0.00953
+# 3     3  0.00228  0.00604 0.00933
+# 4     4  0.000563 0.00459 0.00925
+# 5     5  0.000401 0.00371 0.00826
+# 6     6 -0.000151 0.00363 0.00777
+# 7     7  0.000252 0.00398 0.00781
+
+# CART (results shown in figure 1 of the main document)
+(cartNB <- CARTcompleted %>%
+    group_by(level) %>%
+    summarise(Min=min(nbModel),
+              Median=median(nbModel),
+              Max=max(nbModel)))
+# Output in R console
+#   level      Min  Median     Max
+#   <int>    <dbl>   <dbl>   <dbl>
+# 1     1 0.00139  0.00543 0.00993
+# 2     2 0.00201  0.00559 0.00930
+# 3     3 0.00142  0.00494 0.00868
+# 4     4 0.000906 0.00413 0.00820
+# 5     5 0.000721 0.00342 0.00802
+# 6     6 0.000424 0.00318 0.00814
+# 7     7 0.000126 0.00277 0.00685
+```
+
+## Prepare output to plot the (median) decision curves
+```{r echo=TRUE, eval = FALSE}
+dcaDf <- tibble(
+    label = factor(
+        rep(c("Treat all", "Treat none", "Logistic regression", "CART"), each=8),
+        levels = c("Logistic regression", "CART", "Treat all", "Treat none")),
+    threshold = rep(c(0, .005, .0075, .01, .0125, .015, .0175, .02), times=4),
+    # Net benefit of:
+    # Treat all, treat none, logistic regression model, CART model.
+    # inc = outcome incidence (10/810)
+    net_benefit = c(inc, nbTreatAll,
+                    rep(0, times=8),
+                    inc, logregNB$Median,
+                    inc, cartNB$Median)
+)
+```
+
+Output in R console
+```{r echo=TRUE, eval = FALSE}
+print(dcaDf, n=nrow(dcaDf))
+   label               threshold net_benefit
+   <fct>                   <dbl>       <dbl>
+ 1 Treat all              0         0.0123  
+ 2 Treat all              0.005     0.00738 
+ 3 Treat all              0.0075    0.00488 
+ 4 Treat all              0.01      0.00237 
+ 5 Treat all              0.0125   -0.000156
+ 6 Treat all              0.015    -0.00269 
+ 7 Treat all              0.0175   -0.00525 
+ 8 Treat all              0.02     -0.00781 
+ 9 Treat none             0         0       
+10 Treat none             0.005     0       
+11 Treat none             0.0075    0       
+12 Treat none             0.01      0       
+13 Treat none             0.0125    0       
+14 Treat none             0.015     0       
+15 Treat none             0.0175    0       
+16 Treat none             0.02      0       
+17 Logistic regression    0         0.0123  
+18 Logistic regression    0.005     0.00866 
+19 Logistic regression    0.0075    0.00777 
+20 Logistic regression    0.01      0.00604 
+21 Logistic regression    0.0125    0.00459 
+22 Logistic regression    0.015     0.00371 
+23 Logistic regression    0.0175    0.00363 
+24 Logistic regression    0.02      0.00398 
+25 CART                   0         0.0123  
+26 CART                   0.005     0.00543 
+27 CART                   0.0075    0.00559 
+28 CART                   0.01      0.00494 
+29 CART                   0.0125    0.00413 
+30 CART                   0.015     0.00342 
+31 CART                   0.0175    0.00318 
+32 CART                   0.02      0.00277
+```
+
+## Plot the (median) decision curves
+
+Median are in paranthesis because this refers only to the net benefit of logistic regression and CART. That is, net benefit for treat all and treat none remains the same across all 100 cross-validations.
+```{r echo=TRUE, eval = FALSE}
+# Custom function to convert threshold probability to harm-to-benefit ratio.
+htbPlot <- function(x) paste0("1:", round((1-x)/x, digits=1))
+
+# Generate figure 1 of the main document:
+useColor <- c("Treat all" = "black", "Treat none" = "black",
+              "Logistic regression" = "black", "CART" = "black")
+
+ggplot(data=dcaDf, aes(x=threshold, y=net_benefit, colour=label)) +
+    geom_line(aes(linetype=label), linewidth=1) +
+    labs(color=NULL) +
+    coord_cartesian(ylim=c(-.0025, .015)) +
+    # With 0% and 1:Inf
+    scale_x_continuous(
+        breaks = seq(0, 0.02, by=.0025)[-2],
+        labels = c("0%", "0.5%", "0.75%", "1%", "1.25%", "1.5%", "1.75%", "2%"),
+        sec.axis = dup_axis(name="Harm-to-benefit ratio", labels=htbPlot)) +
+    
+    scale_colour_manual(values = useColor) +
+    
+    scale_linetype_manual(values = c("solid", "dotdash", "dashed", "dotted")) +
+    
+    guides(colour="none") +
+    
+    ylab(label="Net benefit") +
+    theme(
+        panel.background = element_blank(),
+        axis.text.x=element_text(size=16),
+        axis.title.x=element_text(size=16),
+        axis.text.y=element_text(size=16),
+        axis.title.y = element_text(size=16),
+        panel.border = element_rect(color="black", fill=NA),
+        legend.text = element_text(size=14),
+        legend.position = "top",
+        legend.title = element_blank()) +
+    labs(x="Threshold probability")
+```
+
+**Note.** The plot itself is shown in the publication and/or the other supplementary material. You can generate the plot yourself by using the R script 'E_DisplayResults', which is part of this supplementary R package (see folder 'rscriptsVignettes').
+
+## Compute delta net benefit
+
+# Display the summarized results
+
+For each probability threshold (or harm-to-benefit ratio), compute minimum, median, and maximum delta net benefit.
+
+```{r echo=TRUE, eval = FALSE}
+# Logistic regression
+# First, remove the 18 models with a negative delta net benefit.
+(logregDeltaNB <-
+logregCompleted[logregCompleted$deltaNb>=0,] %>%
+    group_by(level) %>%
+    summarise(Min=min(deltaNb),
+              Median=median(deltaNb),
+              Max=max(deltaNb)))
+# Output in R console
+#   level       Min  Median     Max
+#   <int>     <dbl>   <dbl>   <dbl>
+# 1     1 0.0000496 0.00140 0.00266
+# 2     2 0.000131  0.00290 0.00465
+# 3     3 0.000200  0.00370 0.00696
+# 4     4 0.000563  0.00459 0.00925
+# 5     5 0.000401  0.00371 0.00826
+# 6     6 0.000531  0.00364 0.00777
+# 7     7 0.000252  0.00398 0.00781
+
+# CART
+# First, remove the 119 models with a negative delta net benefit.
+(cartDeltaNB <-
+CARTcompleted[CARTcompleted$deltaNb>=0,] %>%
+    group_by(level) %>%
+    summarise(Min=min(deltaNb),
+              Median=median(deltaNb),
+              Max=max(deltaNb)))
+# Output in R console
+#   level      Min   Median     Max
+#   <int>    <dbl>    <dbl>   <dbl>
+# 1     1 8.67e-19 0.000341 0.00254
+# 2     2 2.18e- 5 0.00140  0.00442
+# 3     3 1.37e- 4 0.00266  0.00631
+# 4     4 9.06e- 4 0.00413  0.00820
+# 5     5 7.21e- 4 0.00342  0.00802
+# 6     6 4.24e- 4 0.00318  0.00814
+# 7     7 1.26e- 4 0.00277  0.00685
+```
+
+## Display the potentially harmful models (i.e., models with a negative delta net benefit)
+```{r echo=TRUE, eval = FALSE}
+# Logistic regression (results shown in figure 1 of the main document)
+addmargins(table(logregCompleted[logregCompleted$deltaNb<0,"level"]))
+# Output in R console
+#  1   2   3   6 Sum 
+# 14   2   1   1  18
+
+# CART (results shown in figure 1 of the main document)
+addmargins(table(CARTcompleted[CARTcompleted$deltaNb<0,"level"]))
+# Output in R console
+#  1   2   3 Sum 
+# 75  38   6 119
+```
+
+**References**
+
+Wickham H (2016). *ggplot2: Elegant Graphics for Data Analysis*. Springer-Verlag New York. ISBN 978-3-319-24277-4, [https://ggplot2.tidyverse.org](https://ggplot2.tidyverse.org).
