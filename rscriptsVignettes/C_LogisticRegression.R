@@ -1,18 +1,11 @@
 # Load packages (install if not yet installed)
 library(tidyverse)
 library(precrec)
-# library(cowplot)
-# library(ggbeeswarm)
-
+#
 # ------------------------------------------
-# BEWARE: Make sure that the script A_PsyCoLausSimulateData.R has been executed before starting to execute this script.
-source("/Users/mmiche/Desktop/PsyCoLausSuiatt/predictSuiattPsyCoLausDev/PsyCoLausSim/CleanedScripts/A_PsyCoLausSimulateData.R", echo = FALSE)
+# BEWARE: R scripts that need to be executed, prior to running this script:
+# B_PsyCoLausSimulateData.R
 # ------------------------------------------
-
-# Model (full dataset = 4 predictors, 1 outcome fsa (future suicide attempt))
-data1 <- simData[,c("sex", "age", "psa", "pmd", "fsa")]
-# # full model and full sample (compute coefs)
-rms::lrm(fsa ~ psa + pmd + sex + age, data=data1)
 # 
 # Holdout proportion of full sample, use for training: 80%
 holdoutTrain <- .8

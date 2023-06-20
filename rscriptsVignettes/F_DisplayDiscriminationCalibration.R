@@ -4,6 +4,12 @@
 #
 # Reason why only logistic regression (not CART): For each single run of the logistic regression model, CART was run seven times (each time using a different harm-to-benefit ratio as case weights). CART was used only as an alternative model to compete against logistic regression in terms of net benefit, not in terms of other performance indicators, such as discrimination or calibration.
 #
+# ------------------------------------------
+# BEWARE: R scripts that need to be executed, prior to running this script:
+# B_PsyCoLausSimulateData.R
+# C_LogisticRegression.R
+# ------------------------------------------
+#
 # Display the discrimination performance measures.
 # -----------------------------------------------
 # auroc: Area under the receiver operating characteristic curve.
@@ -17,7 +23,7 @@ colnames(aucDf) <- c("auroc", "prauc")
 # Two custom functions to compute the 25th and the 75th quantile.
 quant1 <- function(x) {as.numeric(quantile(x)["25%"])}
 quant3 <- function(x) {as.numeric(quantile(x)["75%"])}
-# For the auroc and the prauc, compute Tukey's five number summary statistics (minimum, lower-hinge, median, upper hinge, maximum) and the mean.
+# For the auroc and the prauc, compute Tukey's five number summary statistics (minimum, lower-hinge (25% quantile), median, upper hinge (75% quantile), maximum) and the mean.
 aucDf %>% summarise(
     across(everything(),
            list(min=min,

@@ -58,7 +58,7 @@ pr <- pr + changeProbsBy
 set.seed(1)
 fsa <- rbinom(4050, 1, pr)
 # Make the simulated dataset, which is closely based on the real dataset.
-simData <- data.frame(fsa, psa, pmd, sex, age)
+simData <- data.frame(fsa=factor(fsa), psa, pmd, sex, age)
 
 # Summary (compare with table 1 in the manuscript), age is a little different.
 summary(simData) # Simulated mean outcome = 0.01185 (1.185%)
@@ -104,6 +104,6 @@ Simulated data (overview computed with rms package)
 
 **References**
 
-R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. [https://www.R-project.org/](https://www.R-project.org/)
+Package citations, enter in R console: ?predictSuiattPsyCoLaus::predictSuiattPsyCoLaus
 
-Frank E Harrell Jr (2021). rms: Regression Modeling Strategies. R package version 6.1-1. [https://CRAN.R-project.org/package=rms](https://CRAN.R-project.org/package=rms)
+Then, on that help page, scroll down to References.

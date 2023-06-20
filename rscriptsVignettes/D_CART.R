@@ -2,12 +2,8 @@ library(rpart)
 library(tidyverse)
 
 # ------------------------------------------
-# BEWARE: Make sure that the script A_PsyCoLausSimulateData.R has been executed before starting to execute this script.
-# source("/Users/mmiche/Desktop/PsyCoLausSuiatt/predictSuiattPsyCoLausDev/PsyCoLausSim/CleanedScripts/A_PsyCoLausSimulateData.R", echo = FALSE)
-# data1 <- simData[,c("sex", "age", "psa", "pmd", "fsa")]
-data1$fsa <- forcats::as_factor(data1$fsa)
-names(data1) <- c("sex", "age", "psa", "pmd", "fsa")
-str(data1)
+# BEWARE: R scripts that need to be executed, prior to running this script:
+# B_PsyCoLausSimulateData.R
 # ------------------------------------------
 
 # Holdout proportion of full sample, use for training: 80%

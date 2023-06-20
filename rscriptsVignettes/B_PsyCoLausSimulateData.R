@@ -37,14 +37,12 @@ pr <- pr + changeProbsBy
 set.seed(1)
 fsa <- rbinom(4050, 1, pr)
 # Make the simulated dataset, which is closely based on the real dataset.
-simData <- data.frame(fsa, psa, pmd, sex, age)
+simData <- data.frame(fsa=factor(fsa), psa, pmd, sex, age)
 
 # Summary (compare with table 1 in the manuscript), age is a little different.
 summary(simData) # Simulated mean outcome = 0.01185 (1.185%)
 # ------------------------------------------
 library(rms)
-
-citation(package="rms")
 
 # Run logistic regression with the simulated dataset.
 rms::lrm(fsa ~ psa + pmd + sex + age, data=simData)

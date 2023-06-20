@@ -1,7 +1,6 @@
 # Load packages (install if not yet installed)
 library(predictSuiattPsyCoLaus)
 library(tidyverse)
-# library(cowplot)
 
 # Custom function to compute harm-to-benefit ratio (hbr)
 hbr <- function(x) {

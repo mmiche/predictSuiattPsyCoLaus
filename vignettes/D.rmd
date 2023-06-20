@@ -328,3 +328,9 @@ cartDf[1:10,]
 # 9  574 226  4  6  0.6 0.71750 0.02586207 0.9930796 132.33333    2
 # 10 574 226  4  6  0.6 0.71750 0.02586207 0.9930796  99.00000    2
 ```
+
+**References**
+
+Package citations, enter in R console: ?predictSuiattPsyCoLaus::predictSuiattPsyCoLaus
+
+Then, on that help page, scroll down to References.

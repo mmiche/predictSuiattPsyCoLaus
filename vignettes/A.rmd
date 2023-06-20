@@ -32,23 +32,24 @@ Our predictSuiattPsyCoLaus package is structured in alphabetical order. Each vig
 
 ### Detailed code inspection
 
-Best research practice guidelines recommend *to publish all code and data*, along with the main research article. Data protection laws prohibit the publication of the original data of the PsyCoLaus study. Therefore, we use the published results (see Table 1 in the research article) as the basis to simulate data, which is superficially similar to the original data. Importantly, we provide all code, starting with the simulation code (see vignette B).
+Best research practice guidelines (e.g., Boulesteix, 2015) recommend *to publish all code and data*, along with the main research article. Data protection laws prohibit the publication of the original data of the PsyCoLaus study. Therefore, we use the published results (see Table 1 in the research article) as the basis to simulate data, which is superficially similar to the original data. Importantly, we provide all code, starting with the simulation code (see vignette B).
 
-## Vignettes A-E in this predictSuiattPsyCoLaus package
+## Vignettes A-G in this predictSuiattPsyCoLaus package
 
 1. A: predictSuiattPsyCoLaus Read me first: predictSuiattPsyCoLaus introduction and overview of the other vignettes.
 
-2. B: Simulation code
+2. B: Simulation code.
 
-3. C: Predict suicide attempt, using logistic regression
+3. C: Predict suicide attempt, using logistic regression.
 
-4. D: Predict suicide attempt, using classification and regression trees (CART)
+4. D: Predict suicide attempt, using classification and regression trees (CART).
 
-5. E: Extract and display prediction performances from logistic regression and from CART.
+5. E: Extract and display clinical utility results (from logistic regression and from CART).
+
+6. F: Display discrimination and calibration.
+
+7. G: Conduct and display result of CART sensitivity analysis.
 
 **References**
 
 Boulesteix, A. L. (2015). Ten simple rules for reducing overoptimistic reporting in methodological computational research. *PLoS Computational Biology*, *11*(4), e1004191. [https://doi.org/10.1371/journal.pcbi.1004191](https://doi.org/10.1371/journal.pcbi.1004191)
-
-
-

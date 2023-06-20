@@ -520,4 +520,6 @@ ggplot(data=dcaDf, aes(x=threshold, y=net_benefit, colour=label)) +
 
 **References**
 
-Wickham H (2016). *ggplot2: Elegant Graphics for Data Analysis*. Springer-Verlag New York. ISBN 978-3-319-24277-4, [https://ggplot2.tidyverse.org](https://ggplot2.tidyverse.org).
+Package citations, enter in R console: ?predictSuiattPsyCoLaus::predictSuiattPsyCoLaus
+
+Then, on that help page, scroll down to References.

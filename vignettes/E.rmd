@@ -1,5 +1,5 @@
 ---
-title: "E: Extract and display prediction performance results"
+title: "E: Compute and display clinical utility results"
 author: Marcel Miché
 date: 2023-06-02
 output:
@@ -7,7 +7,7 @@ output:
     theme: yeti
     toc: false
 vignette: >
-  %\VignetteIndexEntry{E: Extract and display prediction performance results}
+  %\VignetteIndexEntry{E: Compute and display clinical utility results}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -297,4 +297,6 @@ addmargins(table(CARTcompleted[CARTcompleted$deltaNb<0,"level"]))
 
 **References**
 
-Wickham H (2016). *ggplot2: Elegant Graphics for Data Analysis*. Springer-Verlag New York. ISBN 978-3-319-24277-4, [https://ggplot2.tidyverse.org](https://ggplot2.tidyverse.org).
+Package citations, enter in R console: ?predictSuiattPsyCoLaus::predictSuiattPsyCoLaus
+
+Then, on that help page, scroll down to References.
