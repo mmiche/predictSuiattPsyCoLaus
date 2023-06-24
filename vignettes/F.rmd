@@ -41,6 +41,8 @@ colnames(aucDf) <- c("auroc", "prauc")
 quant1 <- function(x) {as.numeric(quantile(x)["25%"])}
 quant3 <- function(x) {as.numeric(quantile(x)["75%"])}
 # For the auroc and the prauc, compute Tukey's five number summary statistics (minimum, lower-hinge, median, upper hinge, maximum) and the mean.
+# aucVec: vector that contains all 12 summarized results.
+aucVec <-
 aucDf %>% summarise(
     across(everything(),
            list(min=min,
@@ -50,6 +52,10 @@ aucDf %>% summarise(
                 qut3=quant3,
                 max=max))
 )
+# Display results
+aucVec[1:6] # Area under the receiver operating characteristic curve
+aucVec[7:12] # Precision-recall curve
+#
 # Output in R console (using the original study data)
 # auroc_min auroc_qut1 auroc_mean auroc_median auroc_qut3 auroc_max
 #  0.643625  0.7709375  0.8053044    0.7995625  0.8456563  0.916375
@@ -228,7 +234,7 @@ Apply the custom function and plot the calibration.
 for(i in 1:100) {
     if(i == 1) {
         # Use the list of cross-validated predictions, produced by the logistic regression model (see script C_LogisticRegression.R)
-        dataTestset <- dataTestsetLs[[i]]
+        dataTestset <- testSubsampleResults[[i]]
         # Apply custom function 'probBreak'.
         calib_1 <- probBreak(dataTestset, iter = i)
         # Plot the output of custom function 'probBreak'.
@@ -251,7 +257,7 @@ for(i in 1:100) {
         # Else: Add the other 99 cross-validated calibration estimates.
     } else {
         # Use the list of cross-validated predictions, produced by the logistic regression model (see script C_LogisticRegression.R)
-        dataTestset <- dataTestsetLs[[i]]
+        dataTestset <- testSubsampleResults[[i]]
         # Apply custom function 'probBreak'.
         calib_i <- probBreak(dataTestset, iter = i)
         # Plot the output of custom function 'probBreak'; however simply add the output to the existing plot.
@@ -268,7 +274,7 @@ Extract the 9 outliers of the calibration plot.
 # How many and which values exceeded the x and y limits of 0.4?
 calibLs <- list()
 for(i in 1:100) {
-    dataTestset <- dataTestsetLs[[i]]
+    dataTestset <- testSubsampleResults[[i]]
     # Execute custom function 'probBreak'
     calibLs[[i]] <- probBreak(dataTestset)
 }
@@ -289,6 +295,16 @@ calibDf[idxOutlier,]
 # 142    3 (0.2,0.3]   0.25 0.5
 # 166    3 (0.2,0.3]   0.25 1.0
 # 219    3 (0.2,0.3]   0.25 0.5
+```
+
+## Compute complete range of all 100 cross-validated predicted probabilities of the logistic regression model
+```{r echo=TRUE, eval = FALSE}
+# Combine all 100 cross-validated test subsample results of the logistic regression model.
+allTestSubsampleResults <- dplyr::bind_rows(testSubsampleResults)
+# Display minimum and maximum predicted probability of the logistic regression model.
+range(allTestSubsampleResults$prob)
+# Output in R console (using the original study data)
+# 7.332591e-05 2.959486e-01 (0.00007; 0.29595)
 ```
 
 **References**
