@@ -1,8 +1,8 @@
 Package: predictSuiattPsyCoLaus
 Type: Package
 Title: Supplementary material to manuscript Prospective prediction of suicide attempts in a general community sample of adults
-Version: 0.1
-Date/Publication: 2023-04-20 17:04:23
+Version: 0.2
+Date/Publication: 2023-07-31 16:54:02
 Author: Marcel Miché
 Maintainer: Marcel Miché <marcel.miche.predictme@gmail.com>
 Description: Enables readers of the manuscript 'Prospective prediction of suicide attempts in a general community sample of adults' to inspect the code and the results in detail.
