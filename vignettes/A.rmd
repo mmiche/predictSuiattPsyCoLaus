@@ -1,7 +1,7 @@
 ---
 title: "A: predictSuiattPsyCoLaus Read me first"
 author: Marcel Miché
-date: 2023-06-02
+date: 2023-07-31
 output:
   html_document:
     theme: yeti
@@ -22,19 +22,17 @@ suiatt = suicide attempt.
 
 PsyCoLaus is the name of the study whose data has been used.
 
-This supplementary R package is part of the publication 'Evaluating the clinical utility of a newly developed and validated prediction model of suicide attempts on the basis of a general community sample of adults'
+This supplementary R package is part of the publication 'Evaluating the clinical utility of an easily applicable prediction model of suicide attempts, newly developed and validated with a general community sample of adults'
 
 ### predictSuiattPsyCoLaus vignettes - Structure
 
-This vignette provides a short explanation of how this predictSuiattPsyCoLaus package is structured.
-
-Our predictSuiattPsyCoLaus package is structured in alphabetical order. Each vignette's name consists of an upper case letter, following the alphabetical order.
+This vignette (A) provides a short explanation of how this predictSuiattPsyCoLaus package is structured: It is structured in alphabetical order. Each vignette's name consists of an upper case letter, following the alphabetical order.
 
 ### Detailed code inspection
 
-Best research practice guidelines (e.g., Boulesteix, 2015) recommend *to publish all code and data*, along with the main research article. Data protection laws prohibit the publication of the original data of the PsyCoLaus study. Therefore, we use the published results (see Table 1 in the research article) as the basis to simulate data, which is superficially similar to the original data. Importantly, we provide all code, starting with the simulation code (see vignette B).
+Best research practice guidelines (e.g., Boulesteix, 2015) recommend *to publish all code and data*, along with the main article. Local data protection laws prohibit the publication of the original data of the PsyCoLaus study. Therefore, we use the published results (see Table 1 in the main article) as the basis to simulate data, which is superficially similar to the original data. Importantly, we provide all code, starting with the simulation code (see vignette B: Simulation code).
 
-## Vignettes A-G in this predictSuiattPsyCoLaus package
+## All vignettes A-G in this predictSuiattPsyCoLaus package
 
 1. A: predictSuiattPsyCoLaus Read me first: predictSuiattPsyCoLaus introduction and overview of the other vignettes.
 
@@ -46,7 +44,7 @@ Best research practice guidelines (e.g., Boulesteix, 2015) recommend *to publish
 
 5. E: Extract and display clinical utility results (from logistic regression and from CART).
 
-6. F: Display discrimination and calibration.
+6. F: Display discrimination and calibration from logistic regression.
 
 7. G: Conduct and display result of CART sensitivity analysis.
 
