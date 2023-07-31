@@ -68,7 +68,6 @@ correspond <- function(data=NULL) {
     # Empty vectors to collect the results that will be returned at the end of the outer for-loop.
     name <- level <- medMaxMinIdx <- c()
     # Outer for-loop. lvl = column 'level' in function argument data.
-    # lvl <- 1; dfCols <- 2
     for(lvl in 1:7) {
         # Inner for-loop. It iterates across the columns 2, 3, and 4, of medMaxMinDf (see above).
         for(dfCols in 2:4) {
@@ -77,7 +76,7 @@ correspond <- function(data=NULL) {
             if(dfCols==2) {
                 
                 # If there is a precise match across the 100 cross-validated net benefits, use that matching net benefit.
-                if(any(logregCompleted[data$level==lvl,"nbModel"][[1]] == medMaxMinDf[medMaxMinDf$level==lvl,"Median"][[1]])) {
+                if(any(data[data$level==lvl,"nbModel"][[1]] == medMaxMinDf[medMaxMinDf$level==lvl,"Median"][[1]])) {
                     # Find exact match.
                     idxMedian <- which(data[data$level==lvl,"nbModel"][[1]] == medMaxMinDf[medMaxMinDf$level==lvl,"Median"][[1]])
                     # Assign name "Median" as often as there are exact matches.
@@ -293,7 +292,7 @@ ggplot(data=dcaDf, aes(x=threshold, y=net_benefit, colour=label)) +
     scale_linetype_manual(values = c("solid", "solid", "solid", "solid", "dashed",
                                      "dashed", "dashed", "solid")) +
     
-    scale_linewidth_manual(values = c(1, 1, 1, 1, 0.3, 0.3, 0.3, 1)) +
+    scale_linewidth_manual(values = c(1, 1, 1, 1, 0.5, 0.5, 0.5, 1)) +
 
     guides(linetype="none") +
     
