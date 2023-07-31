@@ -39,18 +39,18 @@ twoSplit <- function(nonEventID=NULL, eventID=NULL,
                                     testN))
     # Use the current seed to ensure perfect reproducibility.
     set.seed(seed)
-    # Shake the neat vector nonEventSelect up. The 1s and 2s will then be scattered all over the place.
+    # Randomly sample from the vector nonEventSelect. The 1s and 2s will then be scattered all over the place.
     nonEventSample <- sample(nonEventSelect)
     
-    # Do the same thing to the vector eventSelect, what you just did to the vector nonEventSelect.
     set.seed(seed)
+    # Randomly sample from the vector eventSelect, same as before with vector nonEventSelect.
     eventSample <- sample(eventSelect)
     
-    # Use the shaken up variables to randomly select the training cases.
+    # From the random samples, pick the training cases.
     train <- c(nonEventID[nonEventSample==1],
                eventID[eventSample==1])
     
-    # Use the shaken up variables to randomly select the test cases.
+    # From the random samples, pick the test cases.
     test <- c(nonEventID[nonEventSample==2],
               eventID[eventSample==2])
     
