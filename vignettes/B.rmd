@@ -1,7 +1,7 @@
 ---
 title: "B: Simulation code"
 author: Marcel Miché
-date: 2023-06-02
+date: 2023-07-31
 output:
   html_document:
     theme: yeti
@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 * Age (obtained at baseline; mean and standard deviation) was 53.89 and 11.09, respectively. Age ranged between 35.84 and 85.57.
 * The outcome suicide attempt at any of the three follow-up assessments were reported by 48 participants.
 
-*BEWARE*: Only if the below code is executed without any changes, the simulated dataset will be superficially similar to the original dataset. Especially will the outcome be identically distributed (4002 non-cases, 48 cases).
+*BEWARE*: Only if the below code is executed without any changes, the simulated dataset will be superficially similar to the original dataset. Especially will the simulated outcome be 'the same', as in the original dataset: 4002 non-cases, 48 cases.
 
 Info: The set.seed(1) command (see code below) guarantees perfect reproducibility across users and operating systems.
 
@@ -64,9 +64,9 @@ simData <- data.frame(fsa=factor(fsa), psa, pmd, sex, age)
 summary(simData) # Simulated mean outcome = 0.01185 (1.185%)
 ```
 
-## Comparison with output of original PsyCoLaus data
+## Results of original PsyCoLaus data
 
-Original PsyCoLaus data (overview computed with rms package)
+Original PsyCoLaus data (overview computed with the rms package).
 ```{r echo=TRUE}
 #                        Model Likelihood    Discrimination    Rank Discrim.
 #                              Ratio Test           Indexes          Indexes
@@ -84,7 +84,7 @@ Original PsyCoLaus data (overview computed with rms package)
 # Age       -0.0423 0.0165 -2.56  0.0105
 ```
 
-Simulated data (overview computed with rms package)
+Simulated data (overview computed with the rms package)
 ```{r echo=TRUE}
  #                       Model Likelihood    Discrimination    Rank Discrim.    
  #                             Ratio Test           Indexes          Indexes    
@@ -101,6 +101,14 @@ Simulated data (overview computed with rms package)
  # sex       -3.7471 41.3940 -0.09  0.9279  
  # age       -0.0431  0.0161 -2.67  0.0077
 ```
+
+## Explanation of coefficient names in both results' outputs:
+* SUA2 and psa: Any lifetime suicide attempt.
+* mentalDx and pmd: Any lifetime mental disorder diagnosis.
+* Sex: Biological sex (male or female)
+* Age: Age in years
+
+All four predictors were assessed at study baseline.
 
 **References**
 
