@@ -1,7 +1,7 @@
 ---
 title: "G: Conduct and display result of CART sensitivity analysis"
 author: Marcel Miché
-date: 2023-06-02
+date: 2023-07-31
 output:
   html_document:
     theme: yeti
@@ -111,7 +111,7 @@ correspond <- function(data=NULL) {
             if(dfCols==2) {
                 
                 # If there is a precise match across the 100 cross-validated net benefits, use that matching net benefit.
-                if(any(logregCompleted[data$level==lvl,"nbModel"][[1]] == medMaxMinDf[medMaxMinDf$level==lvl,"Median"][[1]])) {
+                if(any(data[data$level==lvl,"nbModel"][[1]] == medMaxMinDf[medMaxMinDf$level==lvl,"Median"][[1]])) {
                     # Find exact match.
                     idxMedian <- which(data[data$level==lvl,"nbModel"][[1]] == medMaxMinDf[medMaxMinDf$level==lvl,"Median"][[1]])
                     # Assign name "Median" as often as there are exact matches.
@@ -239,8 +239,9 @@ print(CARTcompletedMedMaxMinUnique[,c("name", "iter", "FP", "TP", "level", "FPwt
 # 16 Median      6    80     4     6 0.0178  0.00318   0.00318 
 # 17 Maximum    42    79     8     6 0.0178  0.00814   0.00814 
 # 18 Minimum    61    93     2     6 0.0178  0.000424  0.000424
-# 19 Maximum    24    71     7     7 0.0204  0.00685   0.00685 
-# 20 Minimum    61    93     2     7 0.0204  0.000126  0.000126
+# 19 Median     15    87     4     7 0.0204  0.00275   0.00275 
+# 20 Maximum    24    71     7     7 0.0204  0.00685   0.00685 
+# 21 Minimum    61    93     2     7 0.0204  0.000126  0.000126
 ```
 
 ### CART (pruning: No pruning, cp = .01, cp = .02, cp = .03, cp = .04, cp = .05)
@@ -516,7 +517,7 @@ ggplot(data=dcaDf, aes(x=threshold, y=net_benefit, colour=label)) +
     labs(x="Threshold probability")
 ```
 
-**Note.** The plot itself is shown in the publication and/or the other supplementary material. You can generate the plot yourself by using the R script 'G_CARTsensitivityAnalysis', which is part of this supplementary R package (see folder 'rscriptsVignettes').
+**Note.** The plot itself is shown in the publication and/or supplementary material 1. You can generate the plot yourself by using the R script 'G_CARTsensitivityAnalysis', which is part of this supplementary material 2 (R package, see folder 'rscriptsVignettes').
 
 **References**
 
