@@ -27,7 +27,7 @@ nbModFun <- function(tp=NULL, fp=NULL, FPwt=NULL) {
 }
 
 # Custom function to compute the clinical utility results for a classification prediction model.
-# Argument confMatDf = confusion matrix data.frame. That is, confMatDf contains 10 columns, 8 of which comprise the confusion matrix or are directly computed on the basis of the confusion matrix.
+# Argument confMatDf = confusion matrix data.frame. That is, confMatDf contains 10 columns, 8 of which comprise the confusion matrix or are directly computed on the basis of the confusion matrix, e.g., sensitivity.
 computeResults <- function(confMatDf=NULL) {
     # Append a distinct column that shows the seven unique levels of threshold probabilities (logreg) or harm-to-benefit ratios (CART).
     confMatDf$level <- rep(1:7, times=100)
