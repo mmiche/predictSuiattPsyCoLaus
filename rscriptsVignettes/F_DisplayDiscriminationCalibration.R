@@ -9,11 +9,13 @@
 # B_PsyCoLausSimulateData.R
 # C_LogisticRegression.R
 # ------------------------------------------
+# Load packages (install if not yet installed)
+library(tidyverse)
 #
 # Display the discrimination performance measures.
 # -----------------------------------------------
-# auroc: Area under the receiver operating characteristic curve.
-# prauc: Precision-recall curve.
+# ROC AUC is the name in the main article. ROC Receiver operating characteristic AUC Area under the curve (in this R script = auroc).
+# PR AUC is the name in the main article. PR Precision-recall AUC Area under the curve (in this R script prauc).
 
 # Put the results in a data.frame with 2 columns:
 # Column 1: auroc, column 2: prauc.
@@ -24,6 +26,8 @@ colnames(aucDf) <- c("auroc", "prauc")
 quant1 <- function(x) {as.numeric(quantile(x)["25%"])}
 quant3 <- function(x) {as.numeric(quantile(x)["75%"])}
 # For the auroc and the prauc, compute Tukey's five number summary statistics (minimum, lower-hinge (25% quantile), median, upper hinge (75% quantile), maximum) and the mean.
+# aucVec: vector that contains all 12 summarized results.
+aucVec <-
 aucDf %>% summarise(
     across(everything(),
            list(min=min,
@@ -31,8 +35,10 @@ aucDf %>% summarise(
                 mean=mean,
                 median=median,
                 qut3=quant3,
-                max=max))
-)
+                max=max)))
+# Display results
+aucVec[1:6] # Area under the receiver operating characteristic curve (ROC AUC)
+aucVec[7:12] # Precision-recall curve (PR AUC)
 #
 # -----------------------------------------------------------------
 # These are the results for the original data that was used in this study.
@@ -50,15 +56,12 @@ aucDf %>% summarise(
 # Use the 100 cross-validated predictions, i.e., the test data which contains the observed outcome and the predicted outcome probability (the original 100 test data cannot be published because they contain the observed outcome of the study participants).
 #
 # Exemplary overview of the first six rows of the first of the 100 cross-validated predictions (bogus output).
+# testSubsampleResults[[1]][1:2,]
 # Column truth = observed outcome (0 = no suicide attempt, 1 = suicide attempt).
 # Column prob = predicted probability that the outcome occurred.
-#   truth        prob
-# 1     0 0.002193025
-# 2     0 0.001325673
-# 3     0 0.002738367
-# 4     0 0.009410226
-# 5     0 0.007172676
-# 6     0 0.012636668
+# truth         prob
+#     0  0.002163025
+#     0  0.001425673
 #
 # Custom function to compute several calibration summary results.
 compCalib <- function(data=NULL, loe=TRUE) {
@@ -135,10 +138,9 @@ matrix(
 # Brier score, calibration intercept, calibration slope, integrated calibration index (ICI), E50, E90, and Emax (e.g., see Austin and Steyerberg, 2019).
 # Austin PC, Steyerberg EW. The Integrated Calibration Index (ICI) and related metrics for quantifying the calibration of logistic regression models. Statistics in Medicine. 2019;38:4051–4065. https://doi.org/10.1002/sim.8281
 #
-# Columns 1-6 of the matrix:
+# Columns 1-6 of the matrix (Minimum, 25% quantile, mean, median, 75% quantile, maximum):
 # -------------------------
-# Minimum, 25% quantile, mean, median, 75% quantile, maximum.
-#
+#         Min.  1st Qu. Median    Mean 3rd Qu.  Max.
 #        [,1]    [,2]    [,3]    [,4]    [,5]   [,6]  
 # [1,] 0.0106  0.0113  0.0116  0.0116  0.0118 0.0126
 # [2,] -2.6576 -0.6973 -0.1554 -0.3017 0.3485 2.5935
@@ -147,6 +149,27 @@ matrix(
 # [5,] 0.0012  0.0023  0.0032  0.0031  0.0041 0.0071
 # [6,] 0.0041  0.0089  0.0126  0.0115  0.0156 0.0243
 # [7,] 0.015   0.1166  0.1948  0.1611  0.2588 0.7011
+#
+# Additionally, compute scaled Brier score: Advantage of the scaled Brier score over the Brier score is that the scaled Brier score is much easier to interpret. The scaled Brier score is conceptually similar to R_squared (or, synonymous, explained variance) in conventional linear regression. That is, the value 1 means that the model is perfect, whereas 0 means that the prediction model is as good as the null model (null model = model that assigns the overall risk to every individual). Values below zero are also possible, indicating a model that is even worse than using the null model.
+# Example: A scaled Brier score of 10% means that the prediction model explains 10% of the prediction error of the null model. Therefore, a scaled Brier score of 100%, even though utopian, means that there is no more prediction error of the null model left to explain.
+#
+# Function to compute the Brier score.
+brier <- function(crossValidData) {
+    mean((crossValidData[,"truth"] - crossValidData[,"prob"])**2)
+}
+# Function to compute the scaled Brier score (using the function to compute the Brier score).
+scaled_brier <- function(crossValidData) {
+    1 - (brier(crossValidData) / (mean(crossValidData[,"truth"]) * (1 - mean(crossValidData[,"truth"]))))
+}
+# Formulas for the Brier and the scaled Brier score, see:
+# Steyerberg, E. W., Vickers, A. J., Cook, N. R., Gerds, T., Gonen, M., Obuchowski, N., ... & Kattan, M. W. (2010). Assessing the performance of prediction models: a framework for some traditional and novel measures. Epidemiology (Cambridge, Mass.), 21(1), 128.
+#
+# The function sapply applies a function (here: 'scaled_brier') to each element of a list (here: testSubsampleResults), returning the results as a vector (here: 100 scaled Brier scores).
+scaled_brierScore <- sapply(testSubsampleResults, scaled_brier)
+# Summarize the scaled Brier scores:
+summary(scaled_brierScore)
+#     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+# -0.03658  0.03216  0.04849  0.04957  0.06994  0.13369
 # --------------------------------------------------
 #
 # Visualize calibration:
@@ -210,7 +233,7 @@ probBreak <- function(data=NULL, iter=NULL) {
 for(i in 1:100) {
     if(i == 1) {
         # Use the list of cross-validated predictions, produced by the logistic regression model (see script C_LogisticRegression.R)
-        dataTestset <- dataTestsetLs[[i]]
+        dataTestset <- testSubsampleResults[[i]]
         # Apply custom function 'probBreak'.
         calib_1 <- probBreak(dataTestset, iter = i)
         # Plot the output of custom function 'probBreak'.
@@ -233,7 +256,7 @@ for(i in 1:100) {
         # Else: Add the other 99 cross-validated calibration estimates.
     } else {
         # Use the list of cross-validated predictions, produced by the logistic regression model (see script C_LogisticRegression.R)
-        dataTestset <- dataTestsetLs[[i]]
+        dataTestset <- testSubsampleResults[[i]]
         # Apply custom function 'probBreak'.
         calib_i <- probBreak(dataTestset, iter = i)
         # Plot the output of custom function 'probBreak'; however simply add the output to the existing plot.
@@ -246,7 +269,7 @@ for(i in 1:100) {
 # How many and which values exceeded the x and y limits of 0.4?
 calibLs <- list()
 for(i in 1:100) {
-    dataTestset <- dataTestsetLs[[i]]
+    dataTestset <- testSubsampleResults[[i]]
     # Execute custom function 'probBreak'
     calibLs[[i]] <- probBreak(dataTestset)
 }
@@ -280,4 +303,9 @@ calibDf[idxOutlier,]
 # 142    3 (0.2,0.3]   0.25 0.5
 # 166    3 (0.2,0.3]   0.25 1.0
 # 219    3 (0.2,0.3]   0.25 0.5
+
+# Combine all 100 cross-validated test subsample results of the logistic regression model.
+allTestSubsampleResults <- dplyr::bind_rows(testSubsampleResults)
+# Display minimum and maximum predicted probability of the logistic regression model.
+range(allTestSubsampleResults$prob)
 # --------------------------------------------------
