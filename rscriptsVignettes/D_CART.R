@@ -101,7 +101,8 @@ rts7 <- seq(.5,2, by=.25)
 data.frame(rtDf7)
 # 
 # Custom function to run the classification and regression tree model, using the seven pre-specified weights. The weights are the part of the harm-to-benefit ratio which in this study is always higher than 1.
-rpartFun <- function(FPwt=1, data=NULL, trainIds=NULL) {
+# Argument 'prune_cp' = 0 means to not apply pruning. In this study, we applied sensitivity analyses for CART by a posteriori pruning the decision tree, using the values 0.1, 0.2, 0.3, 0.4, and 0.5 as the pruning parameter 'cp' of the function prune (from the package rpart); see supplementary material 1, CART sensitivity analysis, as well as this supplementary material 2 (R package), vignette and R script G_CARTsensitivityAnalysis.
+rpartFun <- function(FPwt=1, data=NULL, trainIds=NULL, prune_cp=0) {
     
     # Extract the row indices for the training subset.
     testIds <- (1:nrow(data))[-trainIds]
@@ -131,12 +132,17 @@ rpartFun <- function(FPwt=1, data=NULL, trainIds=NULL) {
         # Run the classification and regression tree model with the training data, using the case weights.
         decTreeMod <- rpart::rpart(fmla, data = data[trainIds,],
                                    weights = modelWeights)
+        # If argument 'prune_cp' is > 0, then prune the decision tree.
+        if(prune_cp > 0) {
+            decTreeMod <- rpart::prune(decTreeMod, cp = prune_cp)
+        }
+        
         # Cross-validate the training model in the test subset, extract the predicted class (event no versus yes) for each test subject.
         initNA <- rep(NA, times=810)
         decTreePred <- data.frame(response=initNA, truth=initNA)
         decTreePredClass <- as.numeric(as.character(predict(decTreeMod, data[testIds,], type="class")))
         decTreePred$response <- decTreePredClass
-        # The [[1]] is needed to get the values from the tibble column, not the tibble column (as column; both a different data objects).
+        # The [[1]] is needed to get the values from the tibble column, not the tibble column (that is, a numeric vector and the column of a tibble are different data objects).
         decTreePred$truth <- data[testIds,outcome][[1]]
         
         # If all predicted outcomes are equal (either 0 or 1), then stop and return a message.
@@ -245,7 +251,9 @@ for(i in 1:(length(treeResLs)/2)) {
 }
 
 # Put the results from all 100 cross-validations into a single data.frame. Since seven threshold probabilities were selected, this yields a data.frame with 700 rows.
-cartDf <- dplyr::bind_rows(cartLs)
+# The function 'as_tibble' from the package tibble makes sense only, if this cartDf (based on the simulated data) shall be used with some of the code in scripts E_DisplayResults or G_CARTsensitivityAnalysis (if cartDf is not of class tibble, other code won't work properly).
+# However, if the code in scripts E_DisplayResults or G_CARTsensitivityAnalysis shall be used on the results that are based on the original data (which cannot be published), then there is no problem because these results are part of this predictSuiattPsyCoLaus package, already possessing the class tibble.
+cartDf <- tibble::as_tibble(dplyr::bind_rows(cartLs))
 
 # Display rows 1-10 of cartDf
 cartDf[1:10,]

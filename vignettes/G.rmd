@@ -86,6 +86,7 @@ CARTPrunedLs <- lapply(predictSuiattPsyCoLaus::CART700Pruned,
 
 Since the median net benefit is computed across all 100 cross-validations for each of the seven threshold probabilities, this computed median net benefit may not precisely correspond to any of the 100 cross-validated net benefits. Therefore, this 'correspond' function extracts the closest net benefit values. Maximum and minimum net benefits must precisely correspond.
 
+**Note** The variable 'level' with values 1-7 refers to the seven selected threshold probabilities (level = 1 = 0.5%, ..., level = 7 = 2%).
 ```{r echo=TRUE, eval = FALSE}
 correspond <- function(data=NULL) {
     

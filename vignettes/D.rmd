@@ -155,7 +155,8 @@ rts7 <- seq(.5,2, by=.25)
 ### Custom function to repeatedly run CART.
 ```{r echo=TRUE, eval = FALSE}
 # Custom function to run the classification and regression tree model, using the seven pre-specified weights. The weights are the part of the harm-to-benefit ratio which in this study is always higher than 1.
-rpartFun <- function(FPwt=1, data=NULL, trainIds=NULL) {
+# Argument 'prune_cp' = 0 means to not apply pruning. In this study, we applied sensitivity analyses for CART by a posteriori pruning the decision tree, using the values 0.1, 0.2, 0.3, 0.4, and 0.5 as the pruning parameter 'cp' of the function prune (from the package rpart); see supplementary material 1, CART sensitivity analysis, as well as this supplementary material 2 (R package), vignette and R script G_CARTsensitivityAnalysis.
+rpartFun <- function(FPwt=1, data=NULL, trainIds=NULL, prune_cp=0) {
     
     # Extract the row indices for the training subset.
     testIds <- (1:nrow(data))[-trainIds]
@@ -185,12 +186,16 @@ rpartFun <- function(FPwt=1, data=NULL, trainIds=NULL) {
         # Run the classification and regression tree model with the training data, using the case weights.
         decTreeMod <- rpart::rpart(fmla, data = data[trainIds,],
                                    weights = modelWeights)
+        # If argument 'prune_cp' is > 0, then prune the decision tree.
+        if(prune_cp > 0) {
+            decTreeMod <- rpart::prune(decTreeMod, cp = prune_cp)
+        }
         # Cross-validate the training model in the test subset, extract the predicted class (event no versus yes) for each test subject.
         initNA <- rep(NA, times=810)
         decTreePred <- data.frame(response=initNA, truth=initNA)
         decTreePredClass <- as.numeric(as.character(predict(decTreeMod, data[testIds,], type="class")))
         decTreePred$response <- decTreePredClass
-        # The [[1]] is needed to get the values from the tibble column, not the tibble column (as column; both a different data objects).
+        # The [[1]] is needed to get the values from the tibble column, not the tibble column (that is, a numeric vector and the column of a tibble are different data objects).
         decTreePred$truth <- data[testIds,outcome][[1]]
         
         # If all predicted outcomes are equal (either 0 or 1), then stop and return a message.
@@ -310,7 +315,7 @@ for(i in 1:(length(treeResLs)/2)) {
 }
 
 # Put the results from all 100 cross-validations into a single data.frame. Since seven threshold probabilities were selected, this yields a data.frame with 700 rows.
-cartDf <- dplyr::bind_rows(cartLs)
+cartDf <- tibble::as_tibble(dplyr::bind_rows(cartLs))
 ```
 
 Quick impression of this single dataset (first 10 out of 700 rows).
@@ -318,17 +323,18 @@ Quick impression of this single dataset (first 10 out of 700 rows).
 # Display rows 1-10 of cartDf
 cartDf[1:10,]
 #
-#     TN  FP FN TP sens    spec        ppv       npv      FPwt iter
-# 1  596 204  4  6  0.6 0.74500 0.02857143 0.9933333 199.00000    1
-# 2  603 197  4  6  0.6 0.75375 0.02955665 0.9934102 132.33333    1
-# 3  606 194  4  6  0.6 0.75750 0.03000000 0.9934426  99.00000    1
-# 4  659 141  5  5  0.5 0.82375 0.03424658 0.9924699  79.00000    1
-# 5  684 116  5  5  0.5 0.85500 0.04132231 0.9927431  65.66667    1
-# 6  684 116  5  5  0.5 0.85500 0.04132231 0.9927431  56.14286    1
-# 7  696 104  5  5  0.5 0.87000 0.04587156 0.9928673  49.00000    1
-# 8  577 223  5  5  0.5 0.72125 0.02192982 0.9914089 199.00000    2
-# 9  574 226  4  6  0.6 0.71750 0.02586207 0.9930796 132.33333    2
-# 10 574 226  4  6  0.6 0.71750 0.02586207 0.9930796  99.00000    2
+#       TN    FP    FN    TP  sens  spec    ppv   npv  FPwt  iter
+#    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl>
+#  1   596   204     4     6   0.6 0.745 0.0286 0.993 199       1
+#  2   603   197     4     6   0.6 0.754 0.0296 0.993 132.      1
+#  3   606   194     4     6   0.6 0.758 0.03   0.993  99       1
+#  4   659   141     5     5   0.5 0.824 0.0342 0.992  79       1
+#  5   684   116     5     5   0.5 0.855 0.0413 0.993  65.7     1
+#  6   684   116     5     5   0.5 0.855 0.0413 0.993  56.1     1
+#  7   696   104     5     5   0.5 0.87  0.0459 0.993  49       1
+#  8   577   223     5     5   0.5 0.721 0.0219 0.991 199       2
+#  9   574   226     4     6   0.6 0.718 0.0259 0.993 132.      2
+# 10   574   226     4     6   0.6 0.718 0.0259 0.993  99       2
 ```
 
 **References**
